@@ -18,7 +18,6 @@ long min(long a, long b) {
 // the (m x n) matrix C are stored in the sequence: {C_00, C_10, ..., C_m0,
 // C_01, C_11, ..., C_m1, C_02, ..., C_0n, C_1n, ..., C_mn}
 void MMult0(long m, long n, long k, double *a, double *b, double *c) {
-  //printf("MMULT0\n");
   for (long j = 0; j < n; j++) {
     for (long p = 0; p < k; p++) {
       for (long i = 0; i < m; i++) {
@@ -26,14 +25,13 @@ void MMult0(long m, long n, long k, double *a, double *b, double *c) {
         double B_pj = b[p+j*k];
         double C_ij = c[i+j*m];
         C_ij = C_ij + A_ip * B_pj;
-        //printf("%2f %2f %2f\n",A_ip, B_pj,  C_ij);
         c[i+j*m] = C_ij;
       }
     }
   }
-  //printf("\n");
 }
 
+/*
 void MMult01(long m, long n, long k, double *a, double *b, double *c) {
   for (long p = 0; p < k; p++) {
     for (long j = 0; j < n; j++) {
@@ -47,7 +45,6 @@ void MMult01(long m, long n, long k, double *a, double *b, double *c) {
     }
   }
 }
-
 void MMult02(long m, long n, long k, double *a, double *b, double *c) {
 
   for (long i = 0; i < m; i++) {
@@ -62,10 +59,10 @@ void MMult02(long m, long n, long k, double *a, double *b, double *c) {
     }
   }
 }
+*/
 
 void MMult1(long m, long n, long k, double *a, double *b, double *c) {
   long nsize = BLOCK_SIZE;
-  //printf("MMULT1\n");
   for (long j = 0; j < n; j+=nsize) {
     for (long p = 0; p < k; p+=nsize) {
       for (long i = 0; i < m; i+=nsize) {
@@ -77,16 +74,13 @@ void MMult1(long m, long n, long k, double *a, double *b, double *c) {
               double B_pj = b[pn+jn*k];
               double C_ij = c[in+jn*m];
               C_ij = C_ij + A_ip * B_pj;
-              //printf("%2f %2f %2f\n",A_ip, B_pj, C_ij);
               c[in+jn*m] = C_ij;
-//MMult0(nsize,nsize,nsize,a[i+p*m],b[p+j*k],c[i+j*m]);
             }
           }
         }
       }
     }
   }
-  //printf("\n");
 }
 
 int main(int argc, char** argv) {

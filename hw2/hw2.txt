@@ -1,0 +1,36 @@
+NetID: yj627
+
+Description of solutions:
+
+val_test01:
+  1) line 84 assigns to n+1 th element of x (x is malloced with n elements), change in line 82 from i <= n to i < n
+  2) x is initiated with malloc, so use free instead of delete to deallocate x's memory
+
+val_test02:
+  1) lines 82-84 initiate only 5 of 10 elements of x. x may contain junk elements, so initiate all 10 elements by changing line 82 from i < 5 to i < 10
+
+MMult1:
+  -
+
+omp_bug2:
+  1) make i,tid private, otherwise i,tid become global
+  2) add reduction in #pragma for, otherwise the correct simultaneous read-write of total by different threads
+  3) initialize total to 0 before barrier, otherwise total can be set to 0 after some value is added to it
+
+omp_bug3:
+  1) remove barrier inside print_results, otherwise threads printing the results get stuck in the barrier inside main and never exit
+
+omp_bug4:
+  1) allocate array a on the heap, otherwise seg fault (stack memory reached limit). Allocate array inside the parallel region since heaped data can only be shared by different threads
+
+omp_bug5:
+  1) Unlock a,b after initialization, otherwise each thread in the section (before adding) waits for either a or b to be unlocked by the other thread, causing deadlock
+
+omp_bug6:
+  1) make sum global and remove declaration in dotprod, so that sum can be shared between threads, otherwise separate sum for each thread
+
+jacobi2D-omp:
+  - 
+
+gs2D-omp:
+  - 
