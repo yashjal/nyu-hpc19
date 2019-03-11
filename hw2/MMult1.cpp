@@ -31,35 +31,6 @@ void MMult0(long m, long n, long k, double *a, double *b, double *c) {
   }
 }
 
-/*
-void MMult01(long m, long n, long k, double *a, double *b, double *c) {
-  for (long p = 0; p < k; p++) {
-    for (long j = 0; j < n; j++) {
-      for (long i = 0; i < m; i++) {
-        double A_ip = a[i+p*m];
-        double B_pj = b[p+j*k];
-        double C_ij = c[i+j*m];
-        C_ij = C_ij + A_ip * B_pj;
-        c[i+j*m] = C_ij;
-      }
-    }
-  }
-}
-void MMult02(long m, long n, long k, double *a, double *b, double *c) {
-
-  for (long i = 0; i < m; i++) {
-    for (long j = 0; j < n; j++) {
-      for (long p = 0; p < k; p++) {
-        double A_ip = a[i+p*m];
-        double B_pj = b[p+j*k];
-        double C_ij = c[i+j*m];
-        C_ij = C_ij + A_ip * B_pj;
-        c[i+j*m] = C_ij;
-      }
-    }
-  }
-}
-*/
 
 void MMult1(long m, long n, long k, double *a, double *b, double *c) {
   long nsize = BLOCK_SIZE;

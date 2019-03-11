@@ -10,7 +10,32 @@ val_test02:
   1) lines 82-84 initiate only 5 of 10 elements of x. x may contain junk elements, so initiate all 10 elements by changing line 82 from i < 5 to i < 10
 
 MMult1:
-  -
+  - Using the arrangement of loops as given in MMult0 gives the best performance because each iteration requires contiguous memory access indexed by the innermost loop index i. Consequently, a lot of read and writes can occur straight from cache. If index i is not the innermost loop, index p not the second inner/outer loop and index j not the outermost loop, cache is not utilized to the fullest (lot more cache misses than hits), giving worse performance. For 1984-by-1984 matrix-matrix multiplication, the optimal loop arrangement takes 7.121201s to complete, has flop rate of 10.966594 Gflops/s and memory bandwidth of 35.093100 GB/s. For second case with loops with indices j and p switched multiplication takes 12.482013s, flop rate is 6.256629 Gflops/s and bandwidth is 20.021212 GB/s. For the case with loops with indices i and p switched, multiplication of 1840-by-1840 matrices takes 22.611138s, flop rate is 2.755060 Gflops/s and bandwidth is 8.816192 GB/s.
+  - The block size that on average gives optimal performance (in terms of time, bandwidth, flop rate) for large matrix multiplication is 96.
+  - The program is run on Intel Xeon E5630 processor with 16 cores. The peak flop rate for this machine is 16*4*2.53=162 Gflops/s. For the largest matrices, the average flop rate is around 100 Gflops/s. So, around 62 percent of the peak flop rate is achieved.
+  - The output produced after block multiplying (with block size 96) and parallelizing is:
+ 
+Dimension       Time    Gflop/s       GB/s        Error
+        96   0.084363 118.610567 379.553815 0.000000e+00
+       192   0.092961 108.116786 345.973715 0.000000e+00
+       288   0.088008 113.999959 364.799869 0.000000e+00
+       384   0.089709 113.613618 363.563578 0.000000e+00
+       480   0.095600 115.681843 370.181896 0.000000e+00
+       576   0.114242 100.367493 321.175979 0.000000e+00
+       672   0.105138 115.453219 369.450301 0.000000e+00
+       768   0.132394 102.644787 328.463317 0.000000e+00
+       864   0.111977 115.197807 368.632981 0.000000e+00
+       960   0.156507 113.060332 361.793062 0.000000e+00
+      1056   0.104912 112.245407 359.185303 0.000000e+00
+      1152   0.138577 110.323340 353.034687 0.000000e+00
+      1248   0.183686 105.820051 338.624163 0.000000e+00
+      1344   0.235234 103.204263 330.253640 0.000000e+00
+      1440   0.314641  94.901172 303.683750 0.000000e+00
+      1536   0.405872  89.286239 285.715966 0.000000e+00
+      1632   0.443835  97.935314 313.393006 0.000000e+00
+      1728   0.527878  97.745678 312.786169 0.000000e+00
+      1824   0.617530  98.268981 314.460739 0.000000e+00
+      1920   0.712338  99.361347 317.956311 0.000000e+00
 
 omp_bug2:
   1) make i,tid private, otherwise i,tid become global
@@ -21,7 +46,7 @@ omp_bug3:
   1) remove barrier inside print_results, otherwise threads printing the results get stuck in the barrier inside main and never exit
 
 omp_bug4:
-  1) allocate array a on the heap, otherwise seg fault (stack memory reached limit). Allocate array inside the parallel region since heaped data can only be shared by different threads
+  1) allocate array a on the heap, otherwise seg fault (stack memory reaches limit) occurs. Allocate array inside the parallel region since heaped data can only be shared by different threads
 
 omp_bug5:
   1) Unlock a,b after initialization, otherwise each thread in the section (before adding) waits for either a or b to be unlocked by the other thread, causing deadlock
@@ -30,7 +55,179 @@ omp_bug6:
   1) make sum global and remove declaration in dotprod, so that sum can be shared between threads, otherwise separate sum for each thread
 
 jacobi2D-omp:
-  - 
+  - The program is run on Intel Xeon E5630 processor with 16 cores. The max iterations is fixed at 10000.
+  - The output produced is summarized below:
+
+	N	time (in sec)	residual 2-norm error	iters		num_threads
+	100	1.1444			0.648297	10000		16
+	100	0.789957		0.648297	10000		8
+	100	1.19834			0.648297	10000		4
+	200	2.23475			48.0262		10000		16
+	200	1.74909			48.0262		10000		8
+	200	1.84762			  "		  "		4
+	400	10.8135			241.425		  "		16
+	400	10.588			  "		  "		8
+	400	8.92533			  "		  "		4
+	800	31.1062			641.62		  "		16
+	800	25.3595			  "		  "		8
+	800	29.8403			  "		  "		4
+	1600	163.971			1441.42		  "		16
+	1600	153.739			  "		  "		8
+	1600	157.466			  "		  "		4
+
+  - The evolution/convergence of residual 2-norm error:
+
+For N=100,
+Iteration: 0 Error: 99.1237
+Iteration: 1000 Error: 50.5478
+Iteration: 2000 Error: 31.0884
+Iteration: 3000 Error: 19.1625
+Iteration: 4000 Error: 11.812
+Iteration: 5000 Error: 7.28111
+Iteration: 6000 Error: 4.48819
+Iteration: 7000 Error: 2.76659
+Iteration: 8000 Error: 1.70537
+Iteration: 9000 Error: 1.05121
+Iteration: 9999 Error: 0.648297
+
+For N=200,
+Iteration: 0 Error: 199.124
+Iteration: 1000 Error: 150.502
+Iteration: 2000 Error: 129.61
+Iteration: 3000 Error: 113.588
+Iteration: 4000 Error: 100.158
+Iteration: 5000 Error: 88.5182
+Iteration: 6000 Error: 78.2991
+Iteration: 7000 Error: 69.2823
+Iteration: 8000 Error: 61.3113
+Iteration: 9000 Error: 54.2599
+Iteration: 9999 Error: 48.0262
+
+For N=400,
+Iteration: 0 Error: 399.125
+Iteration: 1000 Error: 350.502
+Iteration: 2000 Error: 329.61
+Iteration: 3000 Error: 313.576
+Iteration: 4000 Error: 300.057
+Iteration: 5000 Error: 288.146
+Iteration: 6000 Error: 277.378
+Iteration: 7000 Error: 267.475
+Iteration: 8000 Error: 258.258
+Iteration: 9000 Error: 249.602
+Iteration: 9999 Error: 241.425
+
+For N=800,
+Iteration: 0 Error: 799.125
+Iteration: 1000 Error: 750.502
+Iteration: 2000 Error: 729.61
+Iteration: 3000 Error: 713.576
+Iteration: 4000 Error: 700.057
+Iteration: 5000 Error: 688.146
+Iteration: 6000 Error: 677.378
+Iteration: 7000 Error: 667.475
+Iteration: 8000 Error: 658.258
+Iteration: 9000 Error: 649.6
+Iteration: 9999 Error: 641.42
+
+For N=1600,
+Iteration: 0 Error: 1599.12
+Iteration: 1000 Error: 1550.5
+Iteration: 2000 Error: 1529.61
+Iteration: 3000 Error: 1513.58
+Iteration: 4000 Error: 1500.06
+Iteration: 5000 Error: 1488.15
+Iteration: 6000 Error: 1477.38
+Iteration: 7000 Error: 1467.48
+Iteration: 8000 Error: 1458.26
+Iteration: 9000 Error: 1449.6
+Iteration: 9999 Error: 1441.42
+
 
 gs2D-omp:
-  - 
+  - The program is run on Intel Xeon E5630 processor with 16 cores. The max iterations is fixed at 10000.
+  - The output produced is summarized below:
+
+	N	time (in sec)	residual 2-norm error	iters		num_threads
+	100	1.55756			0.00726318	10000		16
+	100	1.39174			  "		10000		8
+	100	1.7638			  "		10000		4
+	200	3.10965			20.0228		10000		16
+	200	3.50363			  "		10000		8
+	200	2.59946			  "		  "		4
+	400	15.6572			249.026		  "		16
+	400	11.2646			  "		  "		8
+	400	10.6291			  "		  "		4
+	800	28.9684			813.632		  "		16
+	800	34.9186			  "		  "		8
+	800	31.2359			  "		  "		4
+	1600	208.866			1945		  "		16
+	1600	217.643			  "		  "		8
+	1600	201.632			  "		  "		4
+
+  - The evolution/convergence of residual 2-norm error:
+
+For N=100,
+Iteration: 0 Error: 139.754
+Iteration: 1000 Error: 43.955
+Iteration: 2000 Error: 16.7007
+Iteration: 3000 Error: 6.34572
+Iteration: 4000 Error: 2.41117
+Iteration: 5000 Error: 0.916165
+Iteration: 6000 Error: 0.348113
+Iteration: 7000 Error: 0.132272
+Iteration: 8000 Error: 0.0502589
+Iteration: 9000 Error: 0.0190968
+Iteration: 9999 Error: 0.00726318
+
+For N=200,
+Iteration: 0 Error: 281.176
+Iteration: 1000 Error: 183.283
+Iteration: 2000 Error: 141.635
+Iteration: 3000 Error: 110.725
+Iteration: 4000 Error: 86.702
+Iteration: 5000 Error: 67.9069
+Iteration: 6000 Error: 53.1879
+Iteration: 7000 Error: 41.6595
+Iteration: 8000 Error: 32.6299
+Iteration: 9000 Error: 25.5574
+Iteration: 9999 Error: 20.0228
+
+For N=400,
+Iteration: 0 Error: 564.019
+Iteration: 1000 Error: 466.126
+Iteration: 2000 Error: 424.336
+Iteration: 3000 Error: 392.264
+Iteration: 4000 Error: 365.225
+Iteration: 5000 Error: 341.409
+Iteration: 6000 Error: 319.902
+Iteration: 7000 Error: 300.179
+Iteration: 8000 Error: 281.918
+Iteration: 9000 Error: 264.91
+Iteration: 9999 Error: 249.026
+
+For N=800,
+Iteration: 0 Error: 1129.71
+Iteration: 1000 Error: 1031.81
+Iteration: 2000 Error: 990.021
+Iteration: 3000 Error: 957.95
+Iteration: 4000 Error: 930.91
+Iteration: 5000 Error: 907.088
+Iteration: 6000 Error: 885.55
+Iteration: 7000 Error: 865.744
+Iteration: 8000 Error: 847.308
+Iteration: 9000 Error: 829.993
+Iteration: 9999 Error: 813.632
+
+For N=1600,
+Iteration: 0 Error: 2261.08
+Iteration: 1000 Error: 2163.18
+Iteration: 2000 Error: 2121.39
+Iteration: 3000 Error: 2089.32
+Iteration: 4000 Error: 2062.28
+Iteration: 5000 Error: 2038.46
+Iteration: 6000 Error: 2016.92
+Iteration: 7000 Error: 1997.11
+Iteration: 8000 Error: 1978.68
+Iteration: 9000 Error: 1961.36
+Iteration: 9999 Error: 1945
+
