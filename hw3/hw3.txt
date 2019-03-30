@@ -1,0 +1,52 @@
+
+Report for hw3:
+
+1) Implemented sin4_vec() and achieved accuracy to 12 digits. Output produced for interval [-pi/4,pi/4]:
+
+Reference time: 25.9710
+Taylor time:    5.8804      Error: 6.928125e-12
+Vector time:    2.8990      Error: 6.928125e-12
+
+Using Euler's Formula and the fact exp(i(x+pi/2)) = iexp(ix),
+
+cos(x+pi/2)+isin(pi/2) = icos(pi)-sin(pi)
+=> sin(x) = -cos(x+pi/2)
+
+For x in [-pi/2,-pi/4), sin(x) is evaluated using the above derived equation.
+For x in (pi/4,pi/2], sin(x) is evaluated using sin(x) = cos(pi/2-x).
+These extend evaluation of sin(x) using Taylor Series to domain [-pi/2,pi/2] with equal accuracy to 12-digits.
+The function sin4_taylor_mod(.) is used to evaluate the Taylor Series of sin(x) in domain [-pi/2,pi/2].
+The output produced is the following:
+
+Reference time: 29.6750
+Taylor time:    5.8864      Error: 5.625895e-08
+Taylor Modified time:    12.9871      Error: 6.927903e-12
+Vector time:    2.9428      Error: 5.625895e-08
+
+In this domain, x may be greater than 1. A naive implementation of taylor series of sin(x) doesn't produce desired accuracy.
+
+2) In parallelizing the scan, the vector is partitioned equally into p threads. 
+Thread 0 is responsible for handling any leftover part of the vector.
+The program is run on Intel Xeon E5630 processor with 16 cores.
+The output produced is the following:
+
+With 4 threads:
+
+sequential-scan = 0.240890s
+parallel-scan   = 0.364771s
+error = 0
+
+With 8 threads:
+
+sequential-scan = 0.238416s
+parallel-scan   = 0.399989s
+error = 0
+
+With 16 threads:
+
+equential-scan = 0.239505s
+parallel-scan   = 0.418951s
+error = 0
+
+The reason why parallel-scan takes longer is possibly because the array is nevertheless traversed sequentially to update the partitioned/parallelized scans (additional flops).
+ 
