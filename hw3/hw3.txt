@@ -1,7 +1,7 @@
 
 Report for hw3:
 
-1) Implemented sin4_vec() and achieved accuracy to 12 digits. Output produced for interval [-pi/4,pi/4]:
+1) Implemented sin4_vec() and achieved accuracy to 12 digits. Output produced for interval [-pi/4,pi/4] (N=1000000):
 
 Reference time: 25.9710
 Taylor time:    5.8804      Error: 6.928125e-12
@@ -25,10 +25,10 @@ Vector time:    2.9428      Error: 5.625895e-08
 
 In this domain, x may be greater than 1. A naive implementation of taylor series of sin(x) doesn't produce desired accuracy.
 
-2) In parallelizing the scan, the vector is partitioned equally into p threads. 
-Thread 0 is responsible for handling any leftover part of the vector.
+2) In parallelizing the scan, the vector/array is partitioned equally into p threads. 
+Thread 0 is responsible for handling any leftover part of the vector/array.
 The program is run on Intel Xeon E5630 processor with 16 cores.
-The output produced is the following:
+The output produced is the following (N=100000000):
 
 With 4 threads:
 
@@ -48,5 +48,14 @@ equential-scan = 0.239505s
 parallel-scan   = 0.418951s
 error = 0
 
-The reason why parallel-scan takes longer is possibly because the array is nevertheless traversed sequentially to update the partitioned/parallelized scans (additional flops).
- 
+The reason why parallel-scan takes longer than seq-scan is possibly because the array is nevertheless traversed sequentially to update the partitioned/parallelized scans.
+So in addition to the each thread doing a sequential-scan on a part of the array, a full sequential traversal of the array is required to complete the parallel-scan.
+
+For N=1000000, the output with 4 threads is:
+
+sequential-scan = 0.002503s
+parallel-scan   = 0.003218s
+error = 0
+
+For this case, the sequential and parallel-scan are closer in time to each other.
+

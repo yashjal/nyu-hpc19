@@ -23,7 +23,7 @@ long min(long a, long b){
 
 void scan_omp(long* prefix_sum, const long* A, long n) {
 
-  const long num_threads = 16;
+  const long num_threads = 4;
   const long chunk_size = n/num_threads;
   omp_set_num_threads(num_threads);
   #pragma omp parallel  
@@ -48,7 +48,7 @@ void scan_omp(long* prefix_sum, const long* A, long n) {
 }
 
 int main() {
-  long N = 100000000;
+  long N = 1000000;
   long* A = (long*) malloc(N * sizeof(long));
   long* B0 = (long*) malloc(N * sizeof(long));
   long* B1 = (long*) malloc(N * sizeof(long));
