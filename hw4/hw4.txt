@@ -1,0 +1,24 @@
+Yash Jalan, yj627@nyu.edu
+HW4 Report
+
+1) The implementation of the matrix-vector multiplication involves an element-wise vector product of each row of the matrix
+   with the the given vector and a subsequent reduction of each of the element-wise products. The following results are run 
+   on cims cuda servers (which share resources such as GPU, so optimal performance may not have been reached) with N = 2^16
+   and block size of 1024.
+
+   On cims cuda1 with GPU GeForce GTX TITAN Black (6 GB memory):
+    CPU Bandwidth = 85.496673 GB/s
+    GPU Bandwidth = 211.953422 GB/s
+    Error = 0.000000 
+  
+   On cims cuda3 with GPU TITAN V (12 GB memory):
+    
+
+
+   On cims cuda4 with GPU GeForce GTX TITAN X (12 GB memory):
+
+   On cims cuda5 with GPU GeForce GTX TITAN Z (12 GB memory):
+
+
+2) 
+
