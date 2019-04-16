@@ -11,14 +11,67 @@ HW4 Report
     GPU Bandwidth = 211.953422 GB/s
     Error = 0.000000 
   
-   On cims cuda3 with GPU TITAN V (12 GB memory):
-    
-
+   On cims cuda3 with GPU TITAN V (12 GB memory), sometimes this server gave the best results:
+    CPU Bandwidth = 61.830516 GB/s
+    GPU Bandwidth = 207.329081 GB/s
+    Error = 0.000000
 
    On cims cuda4 with GPU GeForce GTX TITAN X (12 GB memory):
+    CPU Bandwidth = 46.840639 GB/s
+    GPU Bandwidth = 104.568787 GB/s
+    Error = 0.000000
 
    On cims cuda5 with GPU GeForce GTX TITAN Z (12 GB memory):
+     CPU Bandwidth = 57.388998 GB/s
+     GPU Bandwidth = 132.750319 GB/s
+     Error = 0.000000
 
+2) The implementation assumes N to be multiple of 32, with an added factor of 2 for boundary conditions. 
+   N = 3200+2, otherwise seg faults (out of memory) in cuda1 GPU server. N can be as large as 12802
+   in other GPU cims servers. The error of the computed solution is computed using the Taylor series 
+   using 2-norm.
 
-2) 
+   On cims cuda1 with GPU GeForce GTX TITAN Black (6 GB memory):
+    Iters = 1000, Err = 2075.342128
+    Iters = 2000, Err = 2065.125415
+    Iters = 3000, Err = 2054.049070
+    Iters = 4000, Err = 2045.420153
+    Iters = 5000, Err = 2037.958667
+    Iters = 6000, Err = 2032.124634
+    Iters = 7000, Err = 2023.610935
+    Iters = 8000, Err = 2017.245245
+    Iters = 9000, Err = 2012.419929
+    total GPU time = 0.032386
 
+   On cims cuda3 with GPU TITAN V (12 GB memory):
+    Iters = 1000, Err = 1768.171977
+    Iters = 2000, Err = 1760.004301
+    Iters = 3000, Err = 1750.525335
+    Iters = 4000, Err = 1743.639148
+    Iters = 5000, Err = 1733.606734
+    Iters = 6000, Err = 1728.014175
+    Iters = 7000, Err = 1721.421065
+    Iters = 8000, Err = 1715.897750
+    Iters = 9000, Err = 1713.433001
+    total GPU time = 0.032438 
+
+   On cims cuda5 with GPU GeForce GTX TITAN Z (12 GB memory):
+    Iters = 1000, Err = 2075.536996
+    Iters = 2000, Err = 2062.314608
+    Iters = 3000, Err = 2052.252306
+    Iters = 4000, Err = 2044.105325
+    Iters = 5000, Err = 2038.946551
+    Iters = 6000, Err = 2031.870275
+    Iters = 7000, Err = 2026.330772
+    Iters = 8000, Err = 2018.624625
+    Iters = 9000, Err = 2012.497427
+    total GPU time = 0.031964
+
+  These are much faster computation times (better latency) than the 
+  time taken with OMP parallelization in HW2.
+
+3) My partner for the project is Richard Xu. We are interested in doing total variation image denoising
+   on a GPU. This algorithm denoises an input image f by finding a function u that minimizes the total 
+   variation with an L1 error term using techniques from variational calculus. The solution to the euler-
+   lagrange equation can be solved iteratively by solving a sparse linear system using Jacobi or Gauss Seidel
+   iteration. We plan on implementing this on both a CPU and a GPU and producing some nice images.
