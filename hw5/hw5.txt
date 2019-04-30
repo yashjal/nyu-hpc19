@@ -1,0 +1,22 @@
+HW5 Report - Yash Jalan
+yj627@nyu.edu
+
+1) 
+
+With array size 500000 integers = 2MB, 10000 repeats and 4 nodes on prince cluster,
+
+ring latency: 7.00699e-01 ms
+ring bandwidth: 2.854293e+00 GB/s
+
+For a single integer, 1000 repeats, and 4 nodes on prince cluser,
+
+ring latency: 1.866148e-03 ms
+
+2) 
+Week			Work					Who
+4/22-4/29	Complete Reading				Richard, Yash
+4/30-5/6	Understand Algorithm and Implement in CUDA	Richard,Yash
+5/7-5/14	Test on real images, debug			Richard,Yash
+5/15-5/20	Prepare Presentation
+
+
