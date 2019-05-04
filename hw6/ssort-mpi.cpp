@@ -28,18 +28,15 @@ int main( int argc, char *argv[]) {
 
   // sort locally
   std::sort(vec, vec+N);
-  printf("p: %d\n",p);
   // sample p-1 entries from vector as the local splitters, i.e.,
   // every N/P-th entry of the sorted vector
-  int* lsplit = (int*)malloc((p-1)*sizeof(int));
-
-  for (int i = 0; i < (p-1); i++) {
+  int* lsplit = (int*)calloc((p-1),sizeof(int));
+  MPI_Barrier(MPI_COMM_WORLD);
+  for (int i = 0; i < p-1; ++i) {
     printf("i: %d,   ", i);
     lsplit[i] = vec[(int)((i+1)*N/p)];
     printf("lsplit %d\n", lsplit[i]);
   }
-  //MPI_Barrier(MPI_COMM_WORLD);
-  printf("lsplit first entry: %d", lsplit[0]);
 
   // every process communicates the selected entries to the root
   // process; use for instance an MPI_Gather
@@ -48,14 +45,20 @@ int main( int argc, char *argv[]) {
     splits = (int*)malloc((p-1)*p*sizeof(int));
   } 
   
-  printf("rank: %d", rank); 
-  MPI_Gather(lsplit, N, MPI_INT, splits, N, MPI_INT, 0, MPI_COMM_WORLD);
+  //printf("rank: %d\n", rank); 
+  MPI_Gather(lsplit, p-1, MPI_INT, splits, p-1, MPI_INT, 0, MPI_COMM_WORLD);
   
   if (rank == 0) {
+    for (int i = 0; i < (p-1)*p; i++) {
+      printf("splits i,val: %d, %d\n",i,splits[i]);
+    }
     std::sort(splits,splits+(p-1)*p);
-    printf("splits first entry: %d", splits[0]);
+    for (int i = 0; i < (p-1)*p; i++) {
+      printf("splits after sort i,val: %d, %d\n",i,splits[i]);
+    }
     for (int i = 0; i < (p-1); i++) {
-      lsplit[i] = splits[(i+1)*p];
+      lsplit[i] = splits[i*p+(p-2)];
+      printf("lsplit after splits: %d\n", lsplit[i]);
     }
   }
 
@@ -81,8 +84,10 @@ int main( int argc, char *argv[]) {
   sdispls[0] = 0;
   
   for (int i = 0; i < (p-1); i++) {
+    printf("lsplit after bcast i, val: %d,%d\n",i,lsplit[i]);
     sdispls[i+1] = std::lower_bound(vec, vec+N, lsplit[i]) - vec;
     scounts[i] = sdispls[i+1]-sdispls[i];
+    printf("rank: %d, scount i,val: %d,%d\n",rank,i,scounts[i]);
   }
   scounts[0] += 1;
   scounts[p-1] = (N-1)-sdispls[p-1];
@@ -105,6 +110,7 @@ int main( int argc, char *argv[]) {
        rdispls[i] = sum;
     }
   }
+  printf("rank: %d, sum: %d\n",rank,sum);
   int* recvbf = (int *) malloc(sizeof(int)*sum);
   MPI_Alltoallv(vec,lcounts,sdispls,MPI_INT,recvbf,rcounts,rdispls,MPI_INT,MPI_COMM_WORLD);
   // do a local sort of the received data
