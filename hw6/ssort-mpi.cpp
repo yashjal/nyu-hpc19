@@ -92,16 +92,25 @@ int main( int argc, char *argv[]) {
   scounts[0] += 1;
   scounts[p-1] = (N-1)-sdispls[p-1];
   
-  int* counts = (int *) malloc(sizeof(int)*p*p);
+  //int* counts = (int *) malloc(sizeof(int)*p*p);
+  int* rcounts = (int *) malloc(sizeof(int)*p);
   // send and receive: first use an MPI_Alltoall to share with every
   // process how many integers it should expect, and then use
   // MPI_Alltoallv to exchange the data
-  MPI_Alltoall(scounts,p,MPI_INT,counts,p,MPI_INT,MPI_COMM_WORLD);
+
+  MPI_Alltoall(scounts,1,MPI_INT,rcounts,1,MPI_INT,MPI_COMM_WORLD);
   int sum = 0;
-  int * rcounts = (int *) malloc(sizeof(int)*p);
+  //int * rcounts = (int *) malloc(sizeof(int)*p);
   int * rdispls = (int *) malloc(sizeof(int)*p);
-  int * lcounts = (int *) malloc(sizeof(int)*p);
+  //int * lcounts = (int *) malloc(sizeof(int)*p);
   rdispls[0] = 0;
+  for (int i = 0; i < p; i++) {
+    if (i != 0) rdispls[i] = sum;
+    sum += rcounts[i];
+    printf("rank: %d, rcounts i,val: %d, %d\n", rank, i, rcounts[i]);
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+  /*
   for (int i = 0; i < p; i++) {
     sum += counts[i*p+rank];
     rcounts[i] = counts[i*p+rank];
@@ -110,23 +119,24 @@ int main( int argc, char *argv[]) {
        rdispls[i] = sum;
     }
   }
+  */
   printf("rank: %d, sum: %d\n",rank,sum);
   int* recvbf = (int *) malloc(sizeof(int)*sum);
-  MPI_Alltoallv(vec,lcounts,sdispls,MPI_INT,recvbf,rcounts,rdispls,MPI_INT,MPI_COMM_WORLD);
+  MPI_Alltoallv(vec,scounts,sdispls,MPI_INT,recvbf,rcounts,rdispls,MPI_INT,MPI_COMM_WORLD);
   // do a local sort of the received data
   std::sort(recvbf,recvbf+sum);
   // every process writes its result to a file
   for (int i = 0; i < sum; i++) {
     printf("rank: %d, iter: %d, val: %d\n", rank, i, recvbf[i]);
   }
-
+  
   free(vec);
   free(lsplit);
-  free(counts);
+  //free(counts);
   free(scounts);
   free(sdispls);
   free(recvbf);
-  free(lcounts);
+  //free(lcounts);
   free(rcounts);
   free(rdispls);
   if (rank == 0) {
