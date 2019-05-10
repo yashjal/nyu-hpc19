@@ -23,10 +23,7 @@ int main( int argc, char *argv[]) {
   // fill vector with random integers
   for (int i = 0; i < N; ++i) {
     vec[i] = rand();
-    //printf("rank: %d, index, entry: %d,%d\n", rank,i, vec[i]);
   }
-  //printf("rank: %d, first entry: %d\n", rank, vec[0]);
-
 
   // sort locally
   std::sort(vec, vec+N);
@@ -51,7 +48,6 @@ int main( int argc, char *argv[]) {
     splits = (int*)malloc((p-1)*p*sizeof(int));
   } 
   
-  //printf("rank: %d\n", rank); 
   MPI_Gather(lsplit, p-1, MPI_INT, splits, p-1, MPI_INT, 0, MPI_COMM_WORLD);
   
   if (rank == 0) {
@@ -62,18 +58,17 @@ int main( int argc, char *argv[]) {
     for (int i = 0; i < (p-1)*p; i++) {
       printf("splits after sort i,val: %d, %d\n",i,splits[i]);
     }
-    //int c_tmp = (p-1)/;
     for (int i = 0; i < (p-1); i++) {
       lsplit[i] = splits[i*p+(p-2)];
       printf("lsplit after splits: %d\n", lsplit[i]);
     }
   }
 
-  MPI_Bcast(lsplit, p-1, MPI_INT, 0, MPI_COMM_WORLD);
   // root process does a sort and picks (p-1) splitters (from the
   // p(p-1) received elements)
   // root process broadcasts splitters to all other processes
-  //MPI_Bcast(s);
+  //MPI_Bcast(s)
+  MPI_Bcast(lsplit, p-1, MPI_INT, 0, MPI_COMM_WORLD);
   
   // every process uses the obtained splitters to decide which
   // integers need to be sent to which other process (local bins).
@@ -98,11 +93,9 @@ int main( int argc, char *argv[]) {
     printf("rank: %d, sdispls i, val: %d,%d\n",rank,i,sdispls[i]);
   }
   
-  //scounts[0] += 1;
   scounts[p-1] = N-sdispls[p-1];
   printf("rank: %d, scount i,val: %d,%d\n",rank,p-1,scounts[p-1]);
   printf("rank: %d, sdispls i, val: %d,%d\n",rank,p-1,sdispls[p-1]);
-  //int* counts = (int *) malloc(sizeof(int)*p*p);
   int* rcounts = (int *) malloc(sizeof(int)*p);
   // send and receive: first use an MPI_Alltoall to share with every
   // process how many integers it should expect, and then use
@@ -110,9 +103,7 @@ int main( int argc, char *argv[]) {
 
   MPI_Alltoall(scounts,1,MPI_INT,rcounts,1,MPI_INT,MPI_COMM_WORLD);
   int sum = 0;
-  //int * rcounts = (int *) malloc(sizeof(int)*p);
   int * rdispls = (int *) malloc(sizeof(int)*p);
-  //int * lcounts = (int *) malloc(sizeof(int)*p);
   rdispls[0] = 0;
   for (int i = 0; i < p; i++) {
     if (i != 0) rdispls[i] = sum;
@@ -120,44 +111,30 @@ int main( int argc, char *argv[]) {
     printf("rank: %d, rcounts i,val: %d, %d\n", rank, i, rcounts[i]);
   }
   MPI_Barrier(MPI_COMM_WORLD);
-  /*
-  for (int i = 0; i < p; i++) {
-    sum += counts[i*p+rank];
-    rcounts[i] = counts[i*p+rank];
-    lcounts[i] = counts[rank*p + i];
-    if (i != 0){
-       rdispls[i] = sum;
-    }
-  }
-  */
+  
   printf("rank: %d, sum: %d\n",rank,sum);
+  
   int* recvbf = (int *) malloc(sizeof(int)*sum);
   MPI_Alltoallv(vec,scounts,sdispls,MPI_INT,recvbf,rcounts,rdispls,MPI_INT,MPI_COMM_WORLD);
   // do a local sort of the received data
   std::sort(recvbf,recvbf+sum);
   // every process writes its result to a file
-  //for (int i = 0; i < sum; i++) {
-    //printf("rank: %d, iter: %d, val: %d\n", rank, i, recvbf[i]);
-  //}
-    {
+  {
     FILE* fd = NULL;
     char filename[256];
     snprintf(filename, 256, "output%02d.txt", rank);
     fd = fopen(filename,"w+");
     for (int i = 0; i < sum; i++) {
-      //printf("rank: %d, iter: %d, val: %d\n", rank, i, recvbf[i]);
       fprintf(fd,"  %d\n",recvbf[i]);
     }
-      fclose(fd);
-    }
+    fclose(fd);
+  }
   
   free(vec);
   free(lsplit);
-  //free(counts);
   free(scounts);
   free(sdispls);
   free(recvbf);
-  //free(lcounts);
   free(rcounts);
   free(rdispls);
   if (rank == 0) {
