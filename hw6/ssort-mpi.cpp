@@ -14,7 +14,7 @@ int main( int argc, char *argv[]) {
 
   // Number of random numbers per processor (this should be increased
   // for actual tests or could be passed in through the command line
-  int N = 100;
+  int N = 20;
 
   int* vec = (int*)malloc(N*sizeof(int));
   // seed random number generator differently on every core
@@ -23,11 +23,17 @@ int main( int argc, char *argv[]) {
   // fill vector with random integers
   for (int i = 0; i < N; ++i) {
     vec[i] = rand();
+    //printf("rank: %d, index, entry: %d,%d\n", rank,i, vec[i]);
   }
-  printf("rank: %d, first entry: %d\n", rank, vec[0]);
+  //printf("rank: %d, first entry: %d\n", rank, vec[0]);
+
 
   // sort locally
   std::sort(vec, vec+N);
+  for (int i = 0; i < N; i++) {
+    printf("rank: %d, index, entry: %d,%d\n", rank,i, vec[i]);
+  }
+
   // sample p-1 entries from vector as the local splitters, i.e.,
   // every N/P-th entry of the sorted vector
   int* lsplit = (int*)calloc((p-1),sizeof(int));
@@ -56,6 +62,7 @@ int main( int argc, char *argv[]) {
     for (int i = 0; i < (p-1)*p; i++) {
       printf("splits after sort i,val: %d, %d\n",i,splits[i]);
     }
+    //int c_tmp = (p-1)/;
     for (int i = 0; i < (p-1); i++) {
       lsplit[i] = splits[i*p+(p-2)];
       printf("lsplit after splits: %d\n", lsplit[i]);
@@ -88,10 +95,13 @@ int main( int argc, char *argv[]) {
     sdispls[i+1] = std::lower_bound(vec, vec+N, lsplit[i]) - vec;
     scounts[i] = sdispls[i+1]-sdispls[i];
     printf("rank: %d, scount i,val: %d,%d\n",rank,i,scounts[i]);
+    printf("rank: %d, sdispls i, val: %d,%d\n",rank,i,sdispls[i]);
   }
-  scounts[0] += 1;
-  scounts[p-1] = (N-1)-sdispls[p-1];
   
+  //scounts[0] += 1;
+  scounts[p-1] = N-sdispls[p-1];
+  printf("rank: %d, scount i,val: %d,%d\n",rank,p-1,scounts[p-1]);
+  printf("rank: %d, sdispls i, val: %d,%d\n",rank,p-1,sdispls[p-1]);
   //int* counts = (int *) malloc(sizeof(int)*p*p);
   int* rcounts = (int *) malloc(sizeof(int)*p);
   // send and receive: first use an MPI_Alltoall to share with every
@@ -126,9 +136,20 @@ int main( int argc, char *argv[]) {
   // do a local sort of the received data
   std::sort(recvbf,recvbf+sum);
   // every process writes its result to a file
-  for (int i = 0; i < sum; i++) {
-    printf("rank: %d, iter: %d, val: %d\n", rank, i, recvbf[i]);
-  }
+  //for (int i = 0; i < sum; i++) {
+    //printf("rank: %d, iter: %d, val: %d\n", rank, i, recvbf[i]);
+  //}
+    {
+    FILE* fd = NULL;
+    char filename[256];
+    snprintf(filename, 256, "output%02d.txt", rank);
+    fd = fopen(filename,"w+");
+    for (int i = 0; i < sum; i++) {
+      //printf("rank: %d, iter: %d, val: %d\n", rank, i, recvbf[i]);
+      fprintf(fd,"  %d\n",recvbf[i]);
+    }
+      fclose(fd);
+    }
   
   free(vec);
   free(lsplit);
