@@ -1,0 +1,34 @@
+0) Project update
+
+Week			Work								   Who
+4/22-4/29	Completed reading							Richard,Yash
+4/30-5/6	Understood algorithms and implemented the base algorithm in CUDA	Richard,Yash
+5/7-5/12	Implemented and optimized the algorithms, debugged			Richard,Yash
+5/14-5/20	Test on more images, tune parameters, prepare presentation, report	Richard,Yash
+
+1) Jacobi
+
+Weak Scaling Study
+
+1000 iterations on prince. N_l = 100. We ran our jacobi-mpi code on 1,4 and 16 processors.
+
+num nodes	  1          4        16
+time         0.024622s  0.033896s  0.052960s
+
+
+Strong Scaling Study
+
+N = 1600. 1000 iterations.
+
+num nodes         1          4            16 
+time         4.253198s    1.170796s    0.352467s
+linear time  4.253198s    1.0632295s   0.2658249s
+
+2) Sample sort
+
+Timing with 8 nodes and 8 tasks per node on prince. 
+
+N       time
+1e4   1.967086s
+1e5   2.270425s
+1e6   3.02500s
